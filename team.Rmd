@@ -1,9 +1,72 @@
 ---
 title: "Lab 4"
-author: "Mikaela Blount"
-date: "10/17/2019"
+author: "Mikaela Blount and Jaden Birkner"
+date: "10/24/2019"
 output: html_document
 ---
+
+#### Owner's GitHub username: mblount2
+#### Partner's GitHub username: jebirkner
+#### Repo name: ds202_lab4
+#### Due date: Thursday Oct. 24 by 10 pm.
+
+## Part one: Cleaning data
+
+```{r}
+library(tidyverse)
+library(readxl)
+defense <- read_excel('cyclonesFootball2018.xlsx', sheet='Defensive')
+str(defense)
+offense <- read_excel('cyclonesFootball2018.xlsx', sheet='Offensive')
+bio <- read_excel('cyclonesFootball2018.xlsx', sheet='Biography')
+```
+
+1.
+```{r}
+defense$Name = factor(defense$Name)
+defense$Opponent_Opponent = factor(defense$Opponent_Opponent)
+offense$Name = factor(offense$Name)
+offense$Opponent_Opponent = factor(offense$Opponent_Opponent)
+bio$Name = factor(bio$Name)
+```
+
+2.
+```{r}
+defClean = mutate_at(defense, , .funs = as.numeric, .vars = c("Tackles_Solo", "Tackles_ASST","Tackles_TFL", "Tackles_Sack", "Turnover_FF", "Turnover_FR", "Turnover_INT", "Pass_QBH", "Pass_PB"))
+```
+
+```{r}
+offClean = mutate_at(offense, .funs = as.numeric, .vars = names(offense[c(3:12)]))
+```
+
+```{r}
+bio = mutate_at(bio, .funs = as.numeric, .vars = c("Weight"))
+```
+
+3.
+```{r}
+bioClean = bio %>%
+  separate(Height, into = c("Feet", "Inches"))
+bioClean$Feet = as.numeric(bioClean$Feet)
+bioClean$Inches = as.numeric(bioClean$Inches)
+bioClean$Feet = bioClean$Feet * 12
+bioClean = mutate(bioClean, Height = bioClean$Feet + bioClean$Inches)
+bioClean = select(bioClean, "Name", "Position", "Weight", "Class",  "Hometown", "Highschool", "Height")
+names(bioClean)
+```
+
+4.
+```{r}
+(str(defClean))
+```
+
+```{r}
+(str(offClean))
+```
+
+```{r}
+(str(bioClean))
+```
 
 ## Part two: Tidying (A)
 
@@ -55,4 +118,33 @@ head(bioClean2)
 table(bioClean2$State)
 ```
 
+## Part three: Joining data frames
 
+1.
+
+```{r}
+offbio = left_join(offClean, bioClean, by = "Name")
+offbio %>% select("Name", "Hometown") %>% unique()
+```
+
+This is a list of all the offensive players and where they are from.
+
+2.
+```{r}
+df1 = inner_join(offClean, bioClean, by = "Name")
+ggplot(df1, aes(x = `Weight`, y = `Receiving_YDS`)) + geom_point() + labs(title = "Relationship between Weight and Receiving Yards", x='Weight', y='Receiving Yards') + geom_smooth()
+```
+
+Based on this graph there is no correlation between weight and receiving yards.
+
+
+3.
+
+Question: Is there a correlation between Height and solo tackles.
+
+```{r}
+def_bio = inner_join(defClean, bioClean, by = "Name")
+ggplot(def_bio, aes(x = `Height`, y = `Tackles_Solo`)) + geom_point() + geom_smooth()
+```
+
+Answer: Based on the scattler plot above, there is no meaningful correlation between number of solo tackles and player Height.
