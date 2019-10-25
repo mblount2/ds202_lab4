@@ -1,0 +1,58 @@
+---
+title: "Lab 4"
+author: "Mikaela Blount"
+date: "10/17/2019"
+output: html_document
+---
+
+## Part two: Tidying (A)
+
+1.
+```{r}
+defClean2 = defClean %>%
+  gather(key = "Statistic", value = "Value",Tackles_Solo, Tackles_ASST, Tackles_TFL, Tackles_Sack, Turnover_FF, Turnover_FR, Turnover_INT, Pass_QBH, Pass_PB)
+```
+
+2. 
+The rarest defensive skill is creating turnovers, espically interceptions (Turnover_INT). This makes sense because the big 12 is known for terrible defensives and high-power offenses; University of Oklahoma's last two quarterbacks were Heisman Winners. Iowa State also struggled for many years with talent on defensive until Matt Campell's second year.
+```{r}
+ggplot(defClean2, aes(x=Value)) +
+    geom_histogram(position="identity", colour="grey40", bins = 10000) +
+    facet_grid(. ~ Statistic)
+
+```
+
+
+
+3.
+ISU had better defense against Kansas State because the points are higher on the y-axis than further on the x-axis indicating that ISU had more solo tackles against Kansas State. The majority of the players are at (0,0) because they recorded no sacks against either team.
+```{r}
+defKSWV = defClean2 %>%
+  filter(Statistic == "Tackles_Solo" & Opponent_Opponent %in% c("West Virginia","Kansas State")) %>%
+  spread(key = Statistic, value = Value)
+
+d = defKSWV %>%
+  spread(key = Opponent_Opponent,value = Tackles_Solo)
+
+ggplot(d ,aes(y = `Kansas State`, x = `West Virginia`,color=Name)) + geom_point(na.rm = TRUE)
+```
+
+
+
+## Part two: Tidying  (B)
+Now let's turn our attention to the player biography `bioClean`.
+
+1. 
+```{r}
+bioClean2 = bioClean %>%
+  separate(Hometown, c("City","State"), sep = ", ", remove = TRUE)
+
+head(bioClean2)
+```
+
+2. 
+```{r}
+table(bioClean2$State)
+```
+
+
